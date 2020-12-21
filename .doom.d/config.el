@@ -3,37 +3,38 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets.
 (setq user-full-name "mneuss"
       user-mail-address "mneuss@no-reply.com")
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;;
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-one)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+(setq org-directory "~/Notes/")
+(after! org-capture
+  (setq org-capture-templates
+      '(("h" "Haskell Roadmap" entry
+         (file+headline "programming_roadmap.org" "Haskell Roadmap")
+         "* TODO %?")
+        ("a" "Agda Roadmap" entry
+         (file+headline "programming_roadmap.org" "Agda Roadmap")
+         "* TODO %?")
+        ("p" "Programming Roadmap" entry
+         (file+headline "programming_roadmap.org" "Programming Roadmap")
+         "* TODO %?")
+        ("e" "Emacs Roadmap" entry
+         (file+headline "programming_roadmap.org" "Emacs Roadmap")
+         "* TODO %?")
+        ("m" "Movies list" entry
+         (file+headline "movies.org" "Movies Roadmap")
+         "* TODO %?")
+        ("g" "Games list" entry
+         (file+headline "games.org" "Games Roadmap")
+         "* TODO %?")
+        ))
+  )
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 
 ;; Here are some additional functions/macros that could help you configure Doom:
@@ -55,10 +56,24 @@
 
 (setq projectile-project-search-path '("~/Programming/"))
 
-(use-package lsp-haskell
- :ensure t
- :config
- (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
- ;; Comment/uncomment this line to see interactions between lsp client/server.
- ;;(setq lsp-log-io t)
-)
+;; (use-package lsp-haskell
+;;  :ensure t
+;;  :config
+;;  (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
+;;  ;; Comment/uncomment this line to see interactions between lsp client/server.
+;;  ;;(setq lsp-log-io t)
+;; )
+
+(use-package dante
+  :ensure t
+  :after haskell-mode
+  :commands 'dante-mode
+  :init
+  (add-hook 'haskell-mode-hook 'flycheck-mode)
+  (add-hook 'haskell-mode-hook 'company-mode)
+  (add-hook 'haskell-mode-hook 'dante-mode)
+  :config
+  (setq-default dante-repl-command-line
+                '("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))
+  (flycheck-add-next-checker 'haskell-dante '(warning . haskell-hlint))
+  )

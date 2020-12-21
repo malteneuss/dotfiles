@@ -107,9 +107,9 @@
        data              ; config/data formats
        emacs-lisp        ; drown in parentheses
        ;;ess               ; emacs speaks statistics
-       ;; (haskell +dante)  ; a language that's lazier than I am
+       (haskell +dante)  ; a language that's lazier than I am
        ;; (haskell +lsp)  ; a language that's lazier than I am
-       (haskell +ghcide)  ; a language that's lazier than I am
+       ;; (haskell +ghcide)  ; a language that's lazier than I am
        json              ; At least it ain't XML
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
        javascript        ; all(hope(abandon(ye(who(enter(here))))))
