@@ -8,26 +8,41 @@
 
 (setq doom-theme 'doom-one)
 
-(setq org-directory "~/Notes/")
+(after! org
+  (setq org-directory "~/Notes/")
+  )
 (after! org-capture
   (setq org-capture-templates
-      '(("h" "Haskell Roadmap" entry
+        '(("r" "Roadmap")
+          ("rh" "Haskell Roadmap" entry
          (file+headline "programming_roadmap.org" "Haskell Roadmap")
          "* TODO %?")
-        ("a" "Agda Roadmap" entry
+        ("ra" "Agda Roadmap" entry
          (file+headline "programming_roadmap.org" "Agda Roadmap")
          "* TODO %?")
-        ("p" "Programming Roadmap" entry
+        ("rp" "Programming Roadmap" entry
          (file+headline "programming_roadmap.org" "Programming Roadmap")
          "* TODO %?")
-        ("e" "Emacs Roadmap" entry
+        ("re" "Emacs Roadmap" entry
          (file+headline "programming_roadmap.org" "Emacs Roadmap")
+         "* TODO %?")
+          ("rj" "Job Roadmap" entry
+         (file+headline "jobs.org" "Newly discovered")
+         "* TODO %?")
+          ("rc" "Chinese Roadmap" entry
+         (file+headline "chinese.org" "Learn Tasks")
          "* TODO %?")
         ("m" "Movies list" entry
          (file+headline "movies.org" "Movies Roadmap")
          "* TODO %?")
+        ("i" "Project Ideas list" entry
+         (file+headline "ideas.org" "Ideas")
+         "* TODO %?")
         ("g" "Games list" entry
          (file+headline "games.org" "Games Roadmap")
+         "* TODO %?")
+        ("t" "General todo list" entry
+         (file+headline "todo.org" "General Tasks")
          "* TODO %?")
         ))
   )
