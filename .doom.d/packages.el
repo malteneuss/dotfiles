@@ -50,3 +50,6 @@
 ;(unpin! t)
 
 ;;(package! ormolu)
+
+;; (package! haskell-mode)
+;; (package! lsp-haskell)

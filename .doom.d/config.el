@@ -75,20 +75,21 @@
 ;;  :ensure t
 ;;  :config
 ;;  (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
+;;  (setq haskell-process-type 'cabal-new-repl)
 ;;  ;; Comment/uncomment this line to see interactions between lsp client/server.
 ;;  ;;(setq lsp-log-io t)
 ;; )
 
-(use-package dante
-  :ensure t
-  :after haskell-mode
-  :commands 'dante-mode
-  :init
-  (add-hook 'haskell-mode-hook 'flycheck-mode)
-  (add-hook 'haskell-mode-hook 'company-mode)
-  (add-hook 'haskell-mode-hook 'dante-mode)
-  :config
-  (setq-default dante-repl-command-line
-                '("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))
-  (flycheck-add-next-checker 'haskell-dante '(warning . haskell-hlint))
-  )
+;; (use-package dante
+;;   :ensure t
+;;   :after haskell-mode
+;;   :commands 'dante-mode
+;;   :init
+;;   (add-hook 'haskell-mode-hook 'flycheck-mode)
+;;   (add-hook 'haskell-mode-hook 'company-mode)
+;;   (add-hook 'haskell-mode-hook 'dante-mode)
+;;   :config
+;;   (setq-default dante-repl-command-line
+;;                 '("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))
+;;   (flycheck-add-next-checker 'haskell-dante '(warning . haskell-hlint))
+;;   )
