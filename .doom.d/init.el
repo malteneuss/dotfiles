@@ -104,6 +104,7 @@
 
        :lang
        ;;coq               ; proofs-as-programs
+       ;;(agda +local)
        data              ; config/data formats
        emacs-lisp        ; drown in parentheses
        ;;ess               ; emacs speaks statistics
