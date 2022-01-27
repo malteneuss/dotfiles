@@ -9,7 +9,11 @@
 (setq doom-theme 'doom-one)
 
 (after! org
-  (setq org-directory "~/Notes/")
+  (setq org-directory "~/Documents/org")
+  (setq org-todo-keywords
+      '((sequence "TODO(t)" "NEXTSTEP(s)" "WAITING(w)" "|" "DONE(d)" "WONTDO(n)")))
+  (setq org-agenda-files '("~/Documents/org"))
+
   )
 (after! org-capture
   (setq org-capture-templates
@@ -19,6 +23,9 @@
          "* TODO %?")
         ("ra" "Agda Roadmap" entry
          (file+headline "programming_roadmap.org" "Agda Roadmap")
+         "* TODO %?")
+        ("rs" "Semantic Web Roadmap" entry
+         (file+headline "programming_roadmap.org" "Semantic Web Roadmap")
          "* TODO %?")
         ("rp" "Programming Roadmap" entry
          (file+headline "programming_roadmap.org" "Programming Roadmap")
@@ -75,10 +82,10 @@
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 
-(setq projectile-project-search-path '("~/Programming/"))
+(setq projectile-project-search-path '("~/Programming" "~/Documents/org" "~/Documents/agenda"))
 
+(setq lsp-haskell-server-path "haskell-language-server-wrapper")
 ;; (use-package lsp-haskell
-;;  :ensure t
 ;;  :config
 ;;  (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
 ;;  (setq haskell-process-type 'cabal-new-repl)
@@ -87,7 +94,6 @@
 ;; )
 
 ;; (use-package dante
-;;   :ensure t
 ;;   :after haskell-mode
 ;;   :commands 'dante-mode
 ;;   :init
@@ -99,3 +105,20 @@
 ;;                 '("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))
 ;;   (flycheck-add-next-checker 'haskell-dante '(warning . haskell-hlint))
 ;;   )
+;;
+(use-package! org-roam
+  :custom
+  (org-roam-directory (file-truename "~/Documents/zettelkasten/"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ("C-c n a" . org-roam-alias-add)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  ;; (require 'org-roam-protocol)
+  )

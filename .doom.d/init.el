@@ -119,7 +119,7 @@
        ;;ledger            ; an accounting system in Emacs
        markdown          ; writing docs for people to ignore
        nix               ; I hereby declare "nix geht mehr!"
-       org               ; organize your plain life in plain text
+       (org +present +roam2 +dragndrop) ; organize your plain life in plain text
        ;;python            ; beautiful is better than ugly
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
