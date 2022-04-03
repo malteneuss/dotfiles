@@ -2,5 +2,6 @@
 source ~/.dotfiles/aliases.sh
 source ~/.dotfiles/functions.sh
 source ~/.dotfiles/exports.sh
-eval "$(direnv hook zsh)"
+[ -x $(command -v direnv) ] && eval "$(direnv hook zsh)"
 #source <(summon --bash-completion-script `which summon`)
+bindkey '^[[Z' autosuggest-accept  # shift + tab  | autosuggest
