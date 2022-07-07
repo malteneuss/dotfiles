@@ -8,50 +8,29 @@
 
 (setq doom-theme 'doom-one)
 
+(defun org-capture-inbox ()
+     (interactive)
+     (call-interactively 'org-store-link)
+     (org-capture nil "i"))
+
 (after! org
   (setq org-directory "~/Documents/org")
   (setq org-todo-keywords
       '((sequence "TODO(t)" "NEXTSTEP(s)" "WAITING(w)" "|" "DONE(d)" "WONTDO(n)")))
   (setq org-agenda-files '("~/Documents/org"))
-
+  (setq org-log-done t)
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c i") 'org-capture-inbox)
   )
+
+
 (after! org-capture
   (setq org-capture-templates
-        '(("r" "Roadmap")
-          ("rh" "Haskell Roadmap" entry
-         (file+headline "programming_roadmap.org" "Haskell Roadmap")
-         "* TODO %?")
-        ("ra" "Agda Roadmap" entry
-         (file+headline "programming_roadmap.org" "Agda Roadmap")
-         "* TODO %?")
-        ("rs" "Semantic Web Roadmap" entry
-         (file+headline "programming_roadmap.org" "Semantic Web Roadmap")
-         "* TODO %?")
-        ("rp" "Programming Roadmap" entry
-         (file+headline "programming_roadmap.org" "Programming Roadmap")
-         "* TODO %?")
-        ("re" "Emacs Roadmap" entry
-         (file+headline "programming_roadmap.org" "Emacs Roadmap")
-         "* TODO %?")
-          ("rj" "Job Roadmap" entry
-         (file+headline "jobs.org" "Newly discovered")
-         "* TODO %?")
-          ("rc" "Chinese Roadmap" entry
-         (file+headline "chinese.org" "Learn Tasks")
-         "* TODO %?")
-        ("m" "Movies list" entry
-         (file+headline "movies.org" "Movies Roadmap")
-         "* TODO %?")
-        ("i" "Project Ideas list" entry
-         (file+headline "ideas.org" "Ideas")
-         "* TODO %?")
-        ("g" "Games list" entry
-         (file+headline "games.org" "Games Roadmap")
-         "* TODO %?")
-        ("t" "General todo list" entry
-         (file+headline "todo.org" "General Tasks")
-         "* TODO %?")
-        ))
+        '(("i" "Misc inbox" entry (file "inbox.org") "* TODO %?")
+          ("p" "Programming" entry (file "programming.org") "* TODO %?")
+          ("l" "Language Learning" entry (file "language.org") "* TODO %?"))
+  )
   )
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
