@@ -207,10 +207,10 @@ myTerminal = "alacritty"
 myXConfig = xfceConfig -- gnomeConfig
 
 myStartupHook = do
-  -- workaround for Java Swing/GUI apps not working
-  spawnOnce "/home/mahene/.dotfiles/xmonad/xmonad-start.sh"
+  spawnOnce "/home/mahene/.xmonad/xmonad-start.sh"
   spawnOnce
     "trayer --edge top --align right --SetDockType true --SetPartialStrut true --expand true --width 10 --height 20 --transparent true --tint 0x000000 &"
+  -- workaround for Java Swing/GUI apps not working
   setWMName "LG3D"
 
 --myStartupHook baseConfig = do
