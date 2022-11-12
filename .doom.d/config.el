@@ -61,30 +61,9 @@
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 
-(setq projectile-project-search-path '("~/Programming" "~/Documents/org" "~/Documents/agenda"))
+(setq projectile-project-search-path '("~/Programming" "~/Documents/org" "~/Documents/agenda" "~/.xmonad"))
 
 (setq lsp-haskell-server-path "haskell-language-server-wrapper")
-;; (use-package lsp-haskell
-;;  :config
-;;  (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
-;;  (setq haskell-process-type 'cabal-new-repl)
-;;  ;; Comment/uncomment this line to see interactions between lsp client/server.
-;;  ;;(setq lsp-log-io t)
-;; )
-
-;; (use-package dante
-;;   :after haskell-mode
-;;   :commands 'dante-mode
-;;   :init
-;;   (add-hook 'haskell-mode-hook 'flycheck-mode)
-;;   (add-hook 'haskell-mode-hook 'company-mode)
-;;   (add-hook 'haskell-mode-hook 'dante-mode)
-;;   :config
-;;   (setq-default dante-repl-command-line
-;;                 '("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))
-;;   (flycheck-add-next-checker 'haskell-dante '(warning . haskell-hlint))
-;;   )
-;;
 (use-package! org-roam
   :custom
   (org-roam-directory (file-truename "~/Documents/zettelkasten/"))
