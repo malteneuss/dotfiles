@@ -145,7 +145,7 @@ overlayXmobar baseConfig = multiStatusBar spawnXbar
                                           baseConfig
 
  where
-  spawnXbar = printf "xmobar ~/.dotfiles/xmonad/xmobar.hs -x %s"
+  spawnXbar = printf "xmobar ~/.xmonad/xmobar.hs -x %s"
   toggleXmobarKey _baseConfig = (ctrlKey .|. winKey, xK_b)
 
 -- | Modifies the given base configuration to launch the given status bar,
