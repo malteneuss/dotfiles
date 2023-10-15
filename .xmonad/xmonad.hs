@@ -44,6 +44,8 @@ import           XMonad.Util.NamedActions
 import           XMonad.Util.NamedScratchpad
 import qualified XMonad.Util.ExtensibleState   as XS
 import           XMonad.Hooks.StatusBar.PP      (filterOutWsPP)
+import           XMonad.Hooks.StatusBar         (dynamicEasySBs, statusBarPropTo, statusBarProp, withEasySB, defToggleStrutsKey, StatusBarConfig)
+import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 
 import           XMonad.Prompt
 import           XMonad.Prompt.Workspace        ( workspacePrompt )
@@ -99,32 +101,58 @@ import           XMonad.Actions.WindowGo        ( ifWindows
 -- xmonad = a basic dynamic tiling windonw manager
 -- xmobar = a simple statusbar on top of xmonad
 -- dmenu = a simple program launcher that is started with win+p
--- stalonetray = an area next to xmobar where running apps like dropbox show clickable icons.
+-- trayer = an area next to xmobar where running apps like dropbox show clickable icons.
 
 main = do
-  screenCount <- countScreens :: IO Int
-  let overlayMyBaseSettings' = overlayMyBaseSettings screenCount
-  let overlayAppGroups'      = overlayAppGroups screenCount myGroups
-  let myXConfig =
-        overlayAppGroups'
-          . overlayKeys
-          . overlayFullscreenSupport
-          . overlayMyBaseSettings'
-          $ xfceConfig
-  myXConfig <- overlayXmobar myXConfig
-  xmonad myXConfig
 
+  xmonad
+     . ewmhFullscreen
+     . ewmh
+     . dynamicEasySBs barSpawner
+     . overlayKeys
+     . overlayMyBaseSettings
+     $ xfceConfig
 
-overlayFullscreenSupport baseConfig = fullscreenSupport baseConfig
+barSpawner :: ScreenId -> IO StatusBarConfig
+barSpawner (S screen) = let n = show screen in pure $ statusBarPropTo ("_XMONAD_LOG") ("xmobar ~/.xmonad/xmobar.hs -x " ++ n) (pure myXmobarPP)
+-- barSpawner (S screen) = let n = show screen in pure $ statusBarPropTo ("_XMONAD_LOG_" ++ n) ("xmobar ~/.xmonad/xmobar.hs -x " ++ n) (pure myXmobarPP)
+
+myXmobarPP2 :: PP
+myXmobarPP2 = def
+    { ppSep             = magenta " • "
+    , ppTitleSanitize   = xmobarStrip
+    , ppCurrent         = wrap " " "" . xmobarBorder "Top" "#8be9fd" 2
+    , ppHidden          = white . wrap " " ""
+    , ppHiddenNoWindows = lowWhite . wrap " " ""
+    , ppUrgent          = red . wrap (yellow "!") (yellow "!")
+    , ppOrder           = \[ws, l, _, wins] -> [ws, l, wins]
+    -- , ppExtras          = [logTitles formatFocused formatUnfocused]
+    }
+  where
+    formatFocused   = wrap (white    "[") (white    "]") . magenta . ppWindow
+    formatUnfocused = wrap (lowWhite "[") (lowWhite "]") . blue    . ppWindow
+
+    -- | Windows should have *some* title, which should not not exceed a
+    -- sane length.
+    ppWindow :: String -> String
+    ppWindow = xmobarRaw . (\w -> if null w then "untitled" else w) . shorten 30
+
+    blue, lowWhite, magenta, red, white, yellow :: String -> String
+    magenta  = xmobarColor "#ff79c6" ""
+    blue     = xmobarColor "#bd93f9" ""
+    white    = xmobarColor "#f8f8f2" ""
+    yellow   = xmobarColor "#f1fa8c" ""
+    red      = xmobarColor "#ff5555" ""
+    lowWhite = xmobarColor "#bbbbbb" ""
 
 overlayKeys baseConfig =
   addDescrKeys ((ctrlKey .|. winKey, xK_h), xMessage) myKeys baseConfig
 
-overlayMyBaseSettings screenCount baseConfig = baseConfig
+overlayMyBaseSettings baseConfig = baseConfig
   { normalBorderColor  = myBlack
   , focusedBorderColor = myBlue
   , focusFollowsMouse  = False
-  , layoutHook         = myLayouts screenCount
+  , layoutHook         = myLayouts
         -- Action to run when a new window is opened, <+> compoeses right to left
   , manageHook         = manageHook baseConfig <+> myManageHook
   , modMask            = winKey
@@ -132,60 +160,6 @@ overlayMyBaseSettings screenCount baseConfig = baseConfig
   , borderWidth        = 3
   , startupHook        = startupHook baseConfig <+> myStartupHook
   }
-
-
-
-overlayXmobar
-  :: LayoutClass l Window
-  => XConfig l
-  -> IO (XConfig (ModifiedLayout AvoidStruts l))
-overlayXmobar baseConfig = multiStatusBar spawnXbar
-                                          myXmobarPP
-                                          toggleXmobarKey
-                                          baseConfig
-
- where
-  spawnXbar = printf "xmobar ~/.xmonad/xmobar.hs -x %s"
-  toggleXmobarKey _baseConfig = (ctrlKey .|. winKey, xK_b)
-
--- | Modifies the given base configuration to launch the given status bar,
--- send status information to that bar, and allocate space on the screen edges
--- for the bar.
-multiStatusBar
-  :: LayoutClass l Window
-  => (String -> String) -- ^ the command line to launch the status bar
-  -> PP        -- ^ the pretty printing options
-  -> (XConfig Layout -> (KeyMask, KeySym))
-                       -- ^ the desired key binding to toggle bar visibility
-  -> XConfig l -- ^ the base config
-  -> IO (XConfig (ModifiedLayout AvoidStruts l))
-multiStatusBar barSpawnCmd prettyPrintConfig barToggleKey baseConfig = do
-  screenCount <- countScreens
-  let screenIds = map S [0 .. screenCount - 1]
-  xmprocs <-
-    mapM (\i -> spawnPipe . barSpawnCmd . show . unScreenId $ i) screenIds :: IO
-      [Handle]
-  return $ baseConfig
-    { layoutHook = avoidStruts (layoutHook baseConfig)
-    , logHook    = do
-                     logHook baseConfig
-                     let physIds = map P [0 .. screenCount - 1]
-                     screenIds <- mapM phys2ScreenId physIds
-                     let physIds' = backpermute screenIds physIds
-                     let xmprocs' = zip physIds' xmprocs
-                     mapM_
-                       (\((P i), handle) -> dynamicLogWithPP $ prettyPrintConfig
-                         { ppOutput = (hPutStrLn handle) . ((show i ++ " ") ++)
-                         }
-                       )
-                       xmprocs'
-    , manageHook = manageHook baseConfig <+> manageDocks
-    , keys       = liftM2 M.union keys' (keys baseConfig)
-    }
-  where keys' = (`M.singleton` sendMessage ToggleStruts) . barToggleKey
-
-backpermute :: Ord i => [i] -> [a] -> [a]
-backpermute idxs list = map snd . sortOn fst $ zip idxs list
 
 -- Define how xmonad-workspace-status is displayed.
 -- Every bar has a textarea for displaying that.
@@ -204,12 +178,10 @@ ctrlKey = controlMask
 
 myTerminal = "alacritty"
 
-myXConfig = xfceConfig -- gnomeConfig
-
 myStartupHook = do
   spawnOnce "/home/mahene/.xmonad/xmonad-start.sh"
   spawnOnce
-    "trayer --edge top --align right --SetDockType true --SetPartialStrut true --expand true --width 10 --height 20 --transparent true --tint 0x000000 &"
+    "trayer --edge top --align right --SetDockType true --SetPartialStrut true --expand true --width 10 --height 18 --transparent true --tint 0x5f5f5f &"
   -- workaround for Java Swing/GUI apps not working
   setWMName "LG3D"
 
@@ -228,27 +200,19 @@ myManageHook = composeAll
   -- , resource =? "microsoft teams - preview"  --> doIgnore
   , isDialog --> doCenterFloat
   , namedScratchpadManageHook myScratchPads
-  , groupManageHook' myGroups
   -- move transient windows like dialogs/alerts on top of their parents
   , transience'
   ]
 
-myLayouts screenCount =
-  rename "Single" Full
-    ||| rename "Fullscreen" (noBorders Full) -- remove borders with single screen
-  -- if isMultiScreen then (rename "Fullscreen" Full) else (rename "FullScreen" (noBorders Full)) -- remove borders with single screen
-  -- rename "Fullscreen" (if isMultiScreen then Full else noBorders Full) -- remove borders with single screen
-    ||| rename
-          "Master"
-          (Tall oneMasterWindow incStepSizePercent masterColumnSizePercent)
+myLayouts =
+  renamed [Replace "Layout-Full"]  Full
+    -- ||| rename "Fullscreen" (noBorders Full) -- remove borders with single screen
+    ||| renamed [Replace "Layout-Master"] (Tall oneMasterWindow incStepSizePercent masterColumnSizePercent)
     ||| TwoPane incStepSizePercent masterColumnSizePercent
-    ||| Grid -- all windows divided evenly
  where -- default tiling algorithm partitions the screen into two panes
   oneMasterWindow         = 1
   incStepSizePercent      = 10 / 100
   masterColumnSizePercent = 70 / 100
-  rename name = renamed [Replace name]
-  isMultiScreen = screenCount > 1
 
 -- Define additional keymappings in compact emacs-string-style:
 -- M- mod/win
@@ -533,137 +497,3 @@ myScratchPads =
   w            = 0.95
   t            = 0.99 - h
   l            = 0.985 - w
-
-
-myGroupKeys =
-  [ ("M-a " ++ key, viewGroup group)
-  | (key, group) <- zip (map show [1 .. 9]) myGroups
-  ]
-
-overlayAppGroups screenCount appGroups baseConfig =
-  baseConfig --addDescrKeys ((winKey, xK_g), xMessage) myKeys baseConfig
-      { workspaces  = workspaces baseConfig
-                        <+> groupSpaces' screenCount appGroups
-      , startupHook = startupHook baseConfig <+> addAppGroups appGroups
-      }
-    `additionalKeysP` myGroupKeys
-  --where myKeys baseConfig = [ subtitle "Workspace groups"] ++ (mkNamedKeymap baseConfig myGroupKeys)
-
-
-viewGroup :: AppGroup -> X ()
-viewGroup group = do
-  homeDir     <- liftIO getHomeDirectory
-  --catchIO . setCurrentDirectory . expandHome homeDir $ directory group
-  screenCount <- liftIO countScreens
-  mapM_ spawnIfDead $ apps group
-  viewWSGroup $ Main.name group
- where
-    -- Replace an initial @~@ character with the home directory.
-  expandHome :: FilePath -> FilePath -> FilePath
-  expandHome home dirPath = case stripPrefix "~" dirPath of
-    Nothing           -> dirPath
-    Just strippedPath -> home ++ strippedPath
-
-
-
-spawnIfDead :: UniqApp -> X ()
-spawnIfDead app = withWindowSet $ \winSet -> do
-  matchingWindows <- filterM (runQuery (recognizer app)) (allWindows winSet)
-  if null matchingWindows then spawn (spawnCmd app) else return ()
-
-groupManageHook' :: [AppGroup] -> ManageHook
-groupManageHook' groups = composeAll $ map groupManageHook groups
-
-groupManageHook :: AppGroup -> ManageHook
-groupManageHook group = do
-  screenCount <- liftIO countScreens
-  let groupWorkspaces = groupSpacesRaw screenCount (Main.name group)
-  composeAll $ map (appManageHook groupWorkspaces) (apps group)
-
-appManageHook :: [WorkspaceId] -> UniqApp -> ManageHook
-appManageHook groupSpaces app = do
-  let targetSpace = appSpace groupSpaces (placer app)
-  (recognizer app) --> doShift targetSpace
-
-
--- TODO add layouts to screens
-data AppGroup = AppGroup
-  { name :: String -- | Name to show in log/xmobar
-  , directory :: FilePath -- | Root folder of project
-  , apps :: [UniqApp] -- which apps to run on in this group
-  }
-
-data UniqApp = UniqApp
-  { spawnCmd :: String
-  , recognizer :: Query Bool
-  , placer :: ScreenCount -> PhysicalScreen
-  }
-
-groupSpacesRaw :: ScreenCount -> String -> [String]
-groupSpacesRaw screenCount groupName =
-  [ groupName ++ "-" ++ show id | id <- screenIdxs ]
-  where screenIdxs = [0 .. screenCount - 1]
-
-groupSpaces :: ScreenCount -> AppGroup -> [String]
-groupSpaces screenCount group = groupSpacesRaw screenCount (Main.name group)
-
-groupSpaces' :: ScreenCount -> [AppGroup] -> [String]
-groupSpaces' screenCount groups = concatMap (groupSpaces screenCount) groups
-
-appSpace :: [WorkspaceId] -> Placer -> WorkspaceId -- determine concrete workspaceId to place an app into
-appSpace workspaces placer =
-  workspaces !! (unPhysicalScreen . placer $ screenCount)
-  where screenCount = length workspaces
-
-
-
-addAppGroup :: AppGroup -> X ()
-addAppGroup (AppGroup groupName _ apps) = do
-  screenCount <- liftIO countScreens
-  let groupWorkspaces = groupSpacesRaw screenCount groupName
-  let physIds         = map P [0 .. screenCount - 1]
-  screenIds <- mapM phys2ScreenId physIds -- need to map left-to-right physical screens to arbitrarily given screenId
-  addRawWSGroup groupName $ zip screenIds groupWorkspaces
-
-addAppGroups :: [AppGroup] -> X ()
-addAppGroups groups = mapM_ addAppGroup groups
-
-
-type Spawner = String
-type Recognizer = Query Bool
-type Placer = ScreenCount -> PhysicalScreen -- position the app on a screen, depending on what is there
-type ScreenCount = Int -- n
-
--- TODO may change placer to [WorkspaceId] -> X WorkspaceId to select one, and be able to do queries
-left :: ScreenCount -> PhysicalScreen
-left _ = P 0 -- always on leftmost/first screen
-
-right :: ScreenCount -> PhysicalScreen
-right n = P (n - 1) -- always on rightmost/last screen
-
-midRight :: ScreenCount -> PhysicalScreen
-midRight n = P . ceiling $ fromIntegral (n - 1) / 2 -- always on middle screen with tendency to the right
-
-phys2ScreenId :: PhysicalScreen -> X ScreenId
-phys2ScreenId physId = fmap (fromMaybe (S 0)) . getScreen def $ physId
-
-unScreenId :: ScreenId -> Int
-unScreenId (S n) = n
-
-unPhysicalScreen :: PhysicalScreen -> Int
-unPhysicalScreen (P n) = n
-
-blogGroup = AppGroup
-  "Blog"
-  "~/Programming/blob_of_code"
-  [ (UniqApp (firefoxCmd' "devfox" "dev") (className =? "devfox") left)
-  , (UniqApp "urxvt -name blogterminal -e bash"
-             (resource =? "blogterminal")
-             midRight
-    )
-  , (UniqApp "code ~/Programming/blob_of_code" (resource =? "code") midRight)
-  , (UniqApp "chromium-browser" (resource =? "chromium-browser") right)
-  ]
-
-myGroups = [blogGroup]
-

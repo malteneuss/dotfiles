@@ -4,8 +4,8 @@ Config
 , font =         "xft:Bitstream Vera Sans Mono:size=10:bold:antialias=true:hinting=true,Font Awesome 5 Free Solid:size=10:antialias=true:hinting=true"
 --, additionalFonts = [ "xft:FontAwesome:pixelsize=13" ]
 , position = TopW L 90
-, border =       BottomB
-, borderColor = "black"
+-- , border =       BottomB
+-- , borderColor = "black"
 -- general behavior
 -- -- , lowerOnStart =     True    -- send to bottom of window stack on start
 -- , hideOnStart =      False   -- start with window unmapped (hidden)
@@ -45,11 +45,13 @@ Config
   , Run Volume "default" "Master" ["-t", "\xf028 [<volumebar>] <status>"] 10
   -- , Run Alsa "default" "Master" [] % Not working yet
   , Run Date "%d %b %T" "mydate" 10
-  -- , Run MPD ["-t", "<state>: <artist> - <track>"] 10
-  , Run StdinReader -- infos coming from xmonad
+  -- -- , Run MPD ["-t", "<state>: <artist> - <track>"] 10
+  , Run XMonadLog
+  -- , Run StdinReader -- infos coming from xmonad
   ]
 -- where to display command information along bar
 -- , template = "%StdinReader% }{ %mpd% | %memory% | %bright% | %default:Master% | %dynnetwork% | %wlp4s0wi% | %battery% | %mydate% |"
-, template = "%StdinReader% }{ %cpu% | %memory% | %bright% | %default:Master% | %dynnetwork% | %wlp3s0wi% | %battery% | %mydate% |"
+, template = "%XMonadLog% }{ %cpu% | %memory% | %bright% | %default:Master% | %battery% | %mydate% |"
+-- , template = "%XMonadLog% }{ "
 }
 
