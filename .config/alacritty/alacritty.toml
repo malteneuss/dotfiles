@@ -1,7 +1,4 @@
-enable_experimental_conpty_backend = false
 live_config_reload = true
-"window.dynamic_title" = true
-"window.opacity" = 1.0
 working_directory = "None"
 
 [bell]
@@ -48,7 +45,7 @@ unfocused_hollow = true
 log_level = "Warn"
 persistent_logging = false
 print_events = false
-ref_test = false
+#ref_test = false
 render_timer = false
 
 [font]
@@ -588,17 +585,6 @@ key = "NumpadEnter"
 [mouse]
 hide_when_typing = false
 
-[mouse.double_click]
-threshold = 300
-
-[mouse.hints]
-modifiers = "None"
-
-[mouse.hints.launcher]
-program = "xdg-open"
-
-[mouse.triple_click]
-threshold = 300
 
 [scrolling]
 history = 10000
