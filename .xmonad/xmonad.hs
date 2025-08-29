@@ -113,7 +113,7 @@ main = do
      . overlayMyBaseSettings
      $ xfceConfig
 
-barSpawner :: ScreenId -> IO StatusBarConfig
+barSpawner :: ScreenId -> X StatusBarConfig
 barSpawner (S screen) = let n = show screen in pure $ statusBarPropTo ("_XMONAD_LOG") ("xmobar ~/.xmonad/xmobar.hs -x " ++ n) (pure myXmobarPP)
 -- barSpawner (S screen) = let n = show screen in pure $ statusBarPropTo ("_XMONAD_LOG_" ++ n) ("xmobar ~/.xmonad/xmobar.hs -x " ++ n) (pure myXmobarPP)
 
